@@ -1,4 +1,59 @@
 -- Этап 1. Создание и заполнение БД
+create schema raw_data;
+
+create table raw_data.sales (
+    id TEXT,
+    auto TEXT,
+    gasoline_consumption TEXT,
+    price TEXT,
+    date TEXT,
+    person_name TEXT,
+    phone TEXT,
+    discount TEXT,
+    brand_origin TEXT
+);
+CREATE schema car_shop;
+
+-- 1. Справочник цветов
+CREATE TABLE car_shop.colors (
+    color_id SERIAL PRIMARY KEY /* serial суррогатный первичный ключ с автоинкрементом для быстрой связи таблиц по целочисленному идентификатору */,
+    color_name VARCHAR(50) NOT NULL UNIQUE /* varchar(50) названия цветов состоят из букв переменной длины и редко превышают 50 символов; unique защищает от дублирования названий цветов */
+);
+
+-- 2. Справочник моделей автомобилей
+CREATE TABLE car_shop.models (
+    model_id SERIAL PRIMARY KEY /* serial целочисленный автоинкрементный идентификатор для однозначного определения модели авто */,
+    brand VARCHAR(100) NOT NULL /* varchar(100) названия брендов могут содержать как буквы, так и цифры, имеют переменную длину, ограничение в 100 символов оптимально */,
+    model_name VARCHAR(150) NOT NULL /* varchar(150) коммерческие названия моделей бывают длинными и содержат спецсимволы или цифры, поэтому выбираем текстовый тип переменной длины */,
+    gasoline_consumption NUMERIC(4, 1) CHECK (gasoline_consumption < 100.0) /* numeric(4, 1) точный числовой тип с фиксированной точкой; расход измеряется максимум двузначным числом и одним знаком после запятой (например, 12.5), для электромобилей поле может оставаться null */,
+    brand_origin VARCHAR(100) NOT NULL /* varchar(100) текстовое поле переменной длины для хранения названия страны происхождения бренда */,
+    CONSTRAINT unique_brand_model UNIQUE (brand, model_name)
+);
+
+-- 3. Таблица мост автомобиля (Связь Многие-ко-Многим)
+CREATE TABLE car_shop.cars (
+    car_id SERIAL PRIMARY KEY /* serial уникальный суррогатный ключ для идентификации конкретной единицы автомобиля определенной модели и цвета */,
+    model_id INTEGER NOT NULL REFERENCES car_shop.models(model_id) ON DELETE CASCADE /* integer внешний ключ, соответствующий типу данных первичного ключа model_id, для связи с таблицей моделей */,
+    color_id INTEGER NOT NULL REFERENCES car_shop.colors(color_id) ON DELETE CASCADE /* integer внешний ключ, соответствующий типу данных первичного ключа color_id, для связи со справочником цветов */,
+    CONSTRAINT unique_car_color UNIQUE (model_id, color_id)
+);
+
+-- 4. Справочник клиентов
+CREATE TABLE car_shop.customers (
+    customer_id SERIAL PRIMARY KEY /* serial первичный ключ с автоинкрементом для быстрой индексации и связывания записей о клиентах */,
+    person_name VARCHAR(255) NOT NULL /* varchar(255) ФИО покупателя имеет переменную длину и состоит из букв, длина до 255 символов гарантирует, что даже самые длинные составные имена не обрежутся */,
+    phone VARCHAR(50) NOT NULL UNIQUE /* varchar(50) номер телефона содержит цифры и спецсимволы (+, -, скобки), поэтому используется varchar; unique добавлен, так как по ТЗ телефон является уникальным маркером клиента */
+);
+
+-- 5. Таблица продаж
+CREATE TABLE car_shop.sales (
+    sale_id SERIAL PRIMARY KEY /* serial первичный ключ с автоинкрементом для однозначной идентификации каждой конкретной сделки купли-продажи */,
+    car_id INTEGER NOT NULL REFERENCES car_shop.cars(car_id) /* integer внешний ключ для связи транзакции продажи с конкретным автомобилем из таблицы cars */,
+    customer_id INTEGER NOT NULL REFERENCES car_shop.customers(customer_id) /* integer внешний ключ для связи транзакции продажи с конкретным покупателем из таблицы customers */,
+    price NUMERIC(9, 2) NOT NULL CHECK (price <= 9999999.99) /* numeric(9, 2) цена может содержать только сотые и не может быть больше семизначной суммы. У numeric повышенная точность при работе с дробными числами, поэтому при операциях с этим типом данных дробные числа не потеряются */,
+    purchase_date DATE NOT NULL /* date используется специальный системный тип для хранения даты (год-месяц-день) без времени, что позволяет выполнять эффективную фильтрацию и сортировку по периодам */,
+    discount NUMERIC(5, 2) NOT NULL CHECK (discount BETWEEN 0 AND 100) /* numeric(5, 2) точный числовой тип с фиксированной точкой для хранения процентов (например, 99.99%), check гарантирует валидность данных в пределах от 0 до 100% */
+);
 
 
 
