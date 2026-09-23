@@ -131,7 +131,7 @@ JOIN car_shop.cars car ON car.model_id = m.model_id AND car.color_id = c.color_i
 
 -- Этап 2. Создание выборок
 
----- Задание 1. Напишите запрос, который выведет процент моделей машин, у которых нет параметра `gasoline_consumption`.
+---- Запрос, который выведет процент моделей машин, у которых нет параметра `gasoline_consumption`.
 SELECT 
     ROUND(
         (COUNT(*) FILTER (WHERE gasoline_consumption IS NULL) * 100.0) / COUNT(*), 
@@ -139,7 +139,7 @@ SELECT
     ) AS nulls_percentage_gasoline_consumption
 FROM car_shop.models;
 
----- Задание 2. Напишите запрос, который покажет название бренда и среднюю цену его автомобилей в разбивке по всем годам с учётом скидки.
+---- Запрос, который покажет название бренда и среднюю цену его автомобилей в разбивке по всем годам с учётом скидки.
 SELECT 
     b.brand_name AS brand_name,
     EXTRACT(YEAR FROM s.purchase_date) AS year,
@@ -151,7 +151,7 @@ JOIN car_shop.brands b ON m.brand_id = b.brand_id
 GROUP BY b.brand_name, EXTRACT(YEAR FROM s.purchase_date)
 ORDER BY brand_name ASC, year ASC;
 
----- Задание 3. Посчитайте среднюю цену всех автомобилей с разбивкой по месяцам в 2022 году с учётом скидки.
+---- Средняя цена всех автомобилей с разбивкой по месяцам в 2022 году с учётом скидки.
 SELECT 
     EXTRACT(MONTH FROM purchase_date) AS month,
     EXTRACT(YEAR FROM purchase_date) AS year,
@@ -161,7 +161,7 @@ WHERE EXTRACT(YEAR FROM purchase_date) = 2022
 GROUP BY EXTRACT(MONTH FROM purchase_date), EXTRACT(YEAR FROM purchase_date)
 ORDER BY month ASC;
 
----- Задание 4. Напишите запрос, который выведет список купленных машин у каждого пользователя.
+---- Запрос, который выведет список купленных машин у каждого пользователя.
 SELECT 
     cust.person_name AS person,
     STRING_AGG(b.brand_name || ' ' || m.model_name, ', ') AS cars
@@ -174,7 +174,7 @@ GROUP BY cust.customer_id, cust.person_name
 ORDER BY person ASC;
 
 
----- Задание 5. Напишите запрос, который покажет количество всех пользователей из США.
+---- Запрос находит максимальную и минимальную базовую цену (без скидки) автомобиля для каждой страны происхождения бренда.
 SELECT 
     o.country_name AS brand_origin,
     ROUND(MAX(s.price / (1 - s.discount / 100.0)), 2) AS price_max,
@@ -187,7 +187,7 @@ JOIN car_shop.origins o ON b.origin_id = o.origin_id
 GROUP BY o.country_name;
 
 
----- 6.
+---- Запрос, который покажет количество всех пользователей из США.
 SELECT 
     COUNT(*) AS persons_from_usa_count
 FROM car_shop.customers
